@@ -49,36 +49,36 @@ loss = tf.reduce_mean(entropy) # computes the mean over all the examples in the 
 optimizer = tf.train.GradientDescentOptimizer(learning_rate).minimize(loss)
 
 with tf.Session() as sess:
-	# to visualize using TensorBoard
-	writer = tf.summary.FileWriter('./my_graph/03/logistic_reg', sess.graph)
+    # to visualize using TensorBoard
+    writer = tf.summary.FileWriter('./my_graph/03/logistic_reg', sess.graph)
 
-	start_time = time.time()
-	sess.run(tf.global_variables_initializer())	
-	n_batches = int(mnist.train.num_examples/batch_size)
-	for i in range(n_epochs): # train the model n_epochs times
-		total_loss = 0
+    start_time = time.time()
+    sess.run(tf.global_variables_initializer())
+    n_batches = int(mnist.train.num_examples/batch_size)
+    for i in range(n_epochs): # train the model n_epochs times
+        total_loss = 0
 
-		for _ in range(n_batches):
-			X_batch, Y_batch = mnist.train.next_batch(batch_size)
-			_, loss_batch = sess.run([optimizer, loss], feed_dict={X: X_batch, Y:Y_batch}) 
-			total_loss += loss_batch
-		print 'Average loss epoch {0}: {1}'.format(i, total_loss/n_batches)
+        for _ in range(n_batches):
+            X_batch, Y_batch = mnist.train.next_batch(batch_size)
+            _, loss_batch = sess.run([optimizer, loss], feed_dict={X: X_batch, Y:Y_batch})
+            total_loss += loss_batch
+        print('Average loss epoch {0}: {1}'.format(i, total_loss/n_batches))
 
-	print 'Total time: {0} seconds'.format(time.time() - start_time)
+    print('Total time: {0} seconds'.format(time.time() - start_time))
 
-	print('Optimization Finished!') # should be around 0.35 after 25 epochs
+    print('Optimization Finished!') # should be around 0.35 after 25 epochs
 
-	# test the model
-	n_batches = int(mnist.test.num_examples/batch_size)
-	total_correct_preds = 0
-	for i in range(n_batches):
-		X_batch, Y_batch = mnist.test.next_batch(batch_size)
-		_, loss_batch, logits_batch = sess.run([optimizer, loss, logits], feed_dict={X: X_batch, Y:Y_batch}) 
-		preds = tf.nn.softmax(logits_batch)
-		correct_preds = tf.equal(tf.argmax(preds, 1), tf.argmax(Y_batch, 1))
-		accuracy = tf.reduce_sum(tf.cast(correct_preds, tf.float32)) # need numpy.count_nonzero(boolarr) :(
-		total_correct_preds += sess.run(accuracy)	
-	
-	print 'Accuracy {0}'.format(total_correct_preds/mnist.test.num_examples)
+    # test the model
+    n_batches = int(mnist.test.num_examples/batch_size)
+    total_correct_preds = 0
+    for i in range(n_batches):
+        X_batch, Y_batch = mnist.test.next_batch(batch_size)
+        _, loss_batch, logits_batch = sess.run([optimizer, loss, logits], feed_dict={X: X_batch, Y:Y_batch})
+        preds = tf.nn.softmax(logits_batch)
+        correct_preds = tf.equal(tf.argmax(preds, 1), tf.argmax(Y_batch, 1))
+        accuracy = tf.reduce_sum(tf.cast(correct_preds, tf.float32)) # need numpy.count_nonzero(boolarr) :(
+        total_correct_preds += sess.run(accuracy)
 
-	writer.close()
+    print('Accuracy {0}'.format(total_correct_preds/mnist.test.num_examples))
+
+    writer.close()
