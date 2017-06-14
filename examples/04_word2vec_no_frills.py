@@ -16,7 +16,7 @@ EMBED_SIZE = 128 # dimension of the word embedding vectors
 SKIP_WINDOW = 1 # the context window
 NUM_SAMPLED = 64    # Number of negative examples to sample.
 LEARNING_RATE = 1.0
-NUM_TRAIN_STEPS = 10000
+NUM_TRAIN_STEPS = 100000
 SKIP_STEP = 2000 # how many steps to skip before reporting the loss
 
 def word2vec(batch_gen):
@@ -55,8 +55,9 @@ def word2vec(batch_gen):
 
         total_loss = 0.0 # we use this to calculate late average loss in the last SKIP_STEP steps
         writer = tf.summary.FileWriter('./my_graph/no_frills/', sess.graph)
-        for index in xrange(NUM_TRAIN_STEPS):
-            centers, targets = batch_gen.next()
+        for index in range(NUM_TRAIN_STEPS):
+            # centers, targets = batch_gen.next()
+            centers, targets = batch_gen.__next__()
             loss_batch, _ = sess.run([loss, optimizer], 
                                     feed_dict={center_words: centers, target_words: targets})
             total_loss += loss_batch
