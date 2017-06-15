@@ -64,12 +64,12 @@ class SkipGramModel:
                 nce_bias = tf.Variable(tf.zeros([VOCAB_SIZE]), name='nce_bias')
 
                 # define loss function to be NCE loss function
-                self.loss = tf.reduce_mean(tf.nn.nce_loss(weights=nce_weight, 
-                                                    biases=nce_bias, 
-                                                    labels=self.target_words, 
-                                                    inputs=embed, 
-                                                    num_sampled=self.num_sampled, 
-                                                    num_classes=self.vocab_size), name='loss')
+                self.loss = tf.reduce_mean(tf.nn.nce_loss(weights=nce_weight,
+                                                          biases=nce_bias,
+                                                          labels=self.target_words,
+                                                          inputs=embed,
+                                                          num_sampled=self.num_sampled,
+                                                          num_classes=self.vocab_size), name='loss')
     def _create_optimizer(self):
         """ Step 5: define optimizer """
         with tf.device('/cpu:0'):
@@ -106,8 +106,9 @@ def train_model(model, batch_gen, num_train_steps, weights_fld):
         total_loss = 0.0 # we use this to calculate late average loss in the last SKIP_STEP steps
         writer = tf.summary.FileWriter('improved_graph/lr' + str(LEARNING_RATE), sess.graph)
         initial_step = model.global_step.eval()
-        for index in xrange(initial_step, initial_step + num_train_steps):
-            centers, targets = batch_gen.next()
+        for index in range(initial_step, initial_step + num_train_steps):
+            # centers, targets = batch_gen.next()
+            centers, targets = next(batch_gen)
             feed_dict={model.center_words: centers, model.target_words: targets}
             loss_batch, _, summary = sess.run([model.loss, model.optimizer, model.summary_op], 
                                               feed_dict=feed_dict)

@@ -16,14 +16,14 @@ N_CLASSES = 10
 
 # Step 1: Read in data
 # using TF Learn's built in function to load MNIST data to the folder data/mnist
-mnist = input_data.read_data_sets("/data/mnist", one_hot=True)
+mnist = input_data.read_data_sets("../data/mnist", one_hot=True)
 
 # Step 2: Define paramaters for the model
 LEARNING_RATE = 0.001
 BATCH_SIZE = 128
 SKIP_STEP = 10
 DROPOUT = 0.75
-N_EPOCHS = 1
+N_EPOCHS = 10
 
 # Step 3: create placeholders for features and labels
 # each image in the MNIST data is of shape 28*28 = 784
@@ -104,7 +104,7 @@ with tf.variable_scope('softmax_linear') as scope:
 # use softmax cross entropy with logits as the loss function
 # compute mean cross entropy, softmax is applied internally
 with tf.name_scope('loss'):
-    entropy = tf.nn.softmax_cross_entropy_with_logits(logits, Y)
+    entropy = tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=Y)
     loss = tf.reduce_mean(entropy, name='loss')
 
 # Step 7: define training op

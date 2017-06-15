@@ -57,7 +57,7 @@ def word2vec(batch_gen):
         writer = tf.summary.FileWriter('./my_graph/no_frills/', sess.graph)
         for index in range(NUM_TRAIN_STEPS):
             # centers, targets = batch_gen.next()
-            centers, targets = batch_gen.__next__()
+            centers, targets = next(batch_gen)
             loss_batch, _ = sess.run([loss, optimizer], 
                                     feed_dict={center_words: centers, target_words: targets})
             total_loss += loss_batch
