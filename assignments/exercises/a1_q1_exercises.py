@@ -115,13 +115,14 @@ with tf.Session() as sess:
 # Hint: see the Huber loss function in the lecture slides 3.
 ###############################################################################
 
-x = tf.random_normal(shape=300)
-y = tf.random_normal(shape=300)
+x = tf.random_normal(shape=[300])
+y = tf.random_normal(shape=[300])
 sub = x - y
-mean_sub = tf.reduce_mean(sub)
-f1 = tf.square(sub)
-f2 = tf.sum(tf.abs(sub))
-out = tf.cond(mean_sub < 0, f1, f2)
+average = tf.reduce_mean(sub)
+f1 = lambda: tf.reduce_mean(tf.square(sub))
+f2 = lambda: tf.reduce_sum(tf.abs(sub))
+out = tf.cond(average < 0, f1, f2)
 with tf.Session() as sess:
+    print(sess.run(average))
     print(sess.run(out))
 
