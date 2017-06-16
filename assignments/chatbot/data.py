@@ -31,7 +31,7 @@ def get_lines():
     with open(file_path, 'rb') as f:
         lines = f.readlines()
         for line in lines:
-            parts = line.split(' +++$+++ ')
+            parts = line.decode('utf-8', errors="ignore").split(' +++$+++ ')
             if len(parts) == 5:
                 if parts[4][-1] == '\n':
                     parts[4] = parts[4][:-1]
@@ -44,7 +44,7 @@ def get_convos():
     convos = []
     with open(file_path, 'rb') as f:
         for line in f.readlines():
-            parts = line.split(' +++$+++ ')
+            parts = line.decode('utf-8', errors='ignore').split(' +++$+++ ')
             if len(parts) == 4:
                 convo = []
                 for line in parts[3][1:-2].split(', '):
@@ -69,8 +69,9 @@ def prepare_dataset(questions, answers):
     
     # random convos to create the test set
     test_ids = random.sample([i for i in range(len(questions))],config.TESTSET_SIZE)
-    
+
     filenames = ['train.enc', 'train.dec', 'test.enc', 'test.dec']
+    # filenames = ['train_ids.enc', 'train_ids.dec', 'test_ids.enc', 'test_ids.dec']
     files = []
     for filename in filenames:
         files.append(open(os.path.join(config.PROCESSED_PATH, filename),'wb'))
@@ -81,7 +82,7 @@ def prepare_dataset(questions, answers):
             files[3].write(answers[i] + '\n')
         else:
             files[0].write(questions[i] + '\n')
-            files[1].write(answers[i] + '\n')
+            files[1].write(answers[i].encode('utf-8') + '\n')
 
     for file in files:
         file.close()
@@ -215,9 +216,9 @@ def _reshape_batch(inputs, size, batch_size):
     """ Create batch-major inputs. Batch inputs are just re-indexed inputs
     """
     batch_inputs = []
-    for length_id in xrange(size):
+    for length_id in range(size):
         batch_inputs.append(np.array([inputs[batch_id][length_id]
-                                    for batch_id in xrange(batch_size)], dtype=np.int32))
+                                    for batch_id in range(batch_size)], dtype=np.int32))
     return batch_inputs
 
 
@@ -227,7 +228,7 @@ def get_batch(data_bucket, bucket_id, batch_size=1):
     encoder_size, decoder_size = config.BUCKETS[bucket_id]
     encoder_inputs, decoder_inputs = [], []
 
-    for _ in xrange(batch_size):
+    for _ in range(batch_size):
         encoder_input, decoder_input = random.choice(data_bucket)
         # pad both encoder and decoder, reverse the encoder
         encoder_inputs.append(list(reversed(_pad_input(encoder_input, encoder_size))))
@@ -239,9 +240,9 @@ def get_batch(data_bucket, bucket_id, batch_size=1):
 
     # create decoder_masks to be 0 for decoders that are padding.
     batch_masks = []
-    for length_id in xrange(decoder_size):
+    for length_id in range(decoder_size):
         batch_mask = np.ones(batch_size, dtype=np.float32)
-        for batch_id in xrange(batch_size):
+        for batch_id in range(batch_size):
             # we set mask to 0 if the corresponding target is a PAD symbol.
             # the corresponding decoder is decoder_input shifted by 1 forward.
             if length_id < decoder_size - 1:
