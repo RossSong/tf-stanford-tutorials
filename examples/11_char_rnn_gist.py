@@ -20,19 +20,23 @@ TEMPRATURE = 0.7
 LR = 0.003
 LEN_GENERATED = 300
 
+
 def vocab_encode(text, vocab):
     return [vocab.index(x) + 1 for x in text if x in vocab]
+
 
 def vocab_decode(array, vocab):
     return ''.join([vocab[x - 1] for x in array])
 
-def read_data(filename, vocab, window=NUM_STEPS, overlap=NUM_STEPS/2):
+
+def read_data(filename, vocab, window=NUM_STEPS, overlap=NUM_STEPS//2):
     for text in open(filename):
         text = vocab_encode(text, vocab)
         for start in range(0, len(text) - window, overlap):
             chunk = text[start: start + window]
             chunk += [0] * (window - len(chunk))
             yield chunk
+
 
 def read_batch(stream, batch_size=BATCH_SIZE):
     batch = []
@@ -43,8 +47,10 @@ def read_batch(stream, batch_size=BATCH_SIZE):
             batch = []
     yield batch
 
+
 def create_rnn(seq, hidden_size=HIDDEN_SIZE):
-    cell = tf.nn.rnn_cell.GRUCell(hidden_size)
+    # cell = tf.nn.rnn_cell.GRUCell(hidden_size)
+    cell = tf.contrib.rnn.GRUCell(hidden_size)
     in_state = tf.placeholder_with_default(
             cell.zero_state(tf.shape(seq)[0], tf.float32), [None, hidden_size])
     # this line to calculate the real length of seq
@@ -53,17 +59,19 @@ def create_rnn(seq, hidden_size=HIDDEN_SIZE):
     output, out_state = tf.nn.dynamic_rnn(cell, seq, length, in_state)
     return output, in_state, out_state
 
+
 def create_model(seq, temp, vocab, hidden=HIDDEN_SIZE):
     seq = tf.one_hot(seq, len(vocab))
     output, in_state, out_state = create_rnn(seq, hidden)
     # fully_connected is syntactic sugar for tf.matmul(w, output) + b
     # it will create w and b for us
     logits = tf.contrib.layers.fully_connected(output, len(vocab), None)
-    loss = tf.reduce_sum(tf.nn.softmax_cross_entropy_with_logits(logits[:, :-1], seq[:, 1:]))
+    loss = tf.reduce_sum(tf.nn.softmax_cross_entropy_with_logits(logits=logits[:, :-1], labels=seq[:, 1:]))
     # sample the next character from Maxwell-Boltzmann Distribution with temperature temp
     # it works equally well without tf.exp
     sample = tf.multinomial(tf.exp(logits[:, -1] / temp), 1)[:, 0] 
     return loss, sample, in_state, out_state
+
 
 def training(vocab, seq, loss, optimizer, global_step, temp, sample, in_state, out_state):
     saver = tf.train.Saver()
@@ -86,6 +94,7 @@ def training(vocab, seq, loss, optimizer, global_step, temp, sample, in_state, o
                 saver.save(sess, 'checkpoints/arvix/char-rnn', iteration)
             iteration += 1
 
+
 def online_inference(sess, vocab, seq, sample, temp, in_state, out_state, seed='T'):
     """ Generate sequence one character at a time, based on the previous character
     """
@@ -100,6 +109,7 @@ def online_inference(sess, vocab, seq, sample, temp, in_state, out_state, seed='
         index, state = sess.run([sample, out_state], feed)
         sentence += vocab_decode(index, vocab)
     print(sentence)
+
 
 def main():
     vocab = (
